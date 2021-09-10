@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
@@ -70,7 +69,7 @@ class Trnsaction(models.Model):
     )
 
 @receiver(post_save, sender=CustomUser)
-def add_uuid(sender, instance, **kwargs):
+def add_uuid(instance, **kwargs):
     if instance.minecraft_uuid == 'not set':
         player = MCUUID(name=instance.username)
         instance.minecraft_uuid = player.uuid
@@ -79,13 +78,13 @@ def add_uuid(sender, instance, **kwargs):
     update_username(instance)
 
 @receiver(post_save, sender=CustomUser)
-def add_first_account(sender, instance, created, **kwargs):
+def add_first_account(instance, created, **kwargs):
     if created:
         account = Account(owner=instance, account_name='Primary Checking', primary=True, account_type='C')
         account.save()
     
 @receiver(post_save, sender=UserVisit)
-def on_visit(sender, instance, created, **kwargs):
+def on_visit(instance, **kwargs):
     update_username(instance.user)
 
 def update_username(instance):
