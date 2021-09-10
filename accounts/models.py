@@ -49,6 +49,26 @@ class Account(models.Model):
     def __str__(self):
         return self.owner.username + "'s " + self.account_name
 
+class Trnsaction(models.Model):
+    DEPOSIT = 'D'
+    WITHDRAWAL = 'W'
+    TRANSFER = 'T'
+    REFUND = 'R'
+    TRANSACTION_TYPE_CHOICES = [
+        (DEPOSIT, 'Deposit'),
+        (WITHDRAWAL, 'Withdrawal'),
+        (TRANSFER, 'Transfer'),
+        (REFUND, 'Refund'),
+    ]
+
+    sender = models.ForeignKey(CustomUser, related_name='sender', on_delete=models.SET_NULL, blank=True, null=True)
+    recipient = models.ForeignKey(CustomUser, related_name='recipient', on_delete=models.SET_NULL, blank=True, null=True)
+    transaction_type = models.CharField(
+        max_length=1,
+        choices=TRANSACTION_TYPE_CHOICES,
+        default=TRANSFER,
+    )
+
 @receiver(post_save, sender=CustomUser)
 def add_uuid(sender, instance, **kwargs):
     if instance.minecraft_uuid == 'not set':
