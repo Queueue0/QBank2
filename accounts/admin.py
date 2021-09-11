@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser, Account
+from .models import CustomUser, Account, Transaction
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
@@ -17,7 +17,12 @@ class CustomUserAdmin(UserAdmin):
 
 class AccountAdmin(admin.ModelAdmin):
     model = Account
-    list_display = ['owner', 'account_name', 'account_type', 'primary', 'netherite_blocks', 'netherite_ingots', 'netherite_scrap', 'diamond_blocks', 'diamonds']
+    list_display = ['owner', 'account_name', 'account_type', 'primary', 'balance']
+
+class TransactionAdmin(admin.ModelAdmin):
+    model = Transaction
+    list_display = ['sender', 'recipient', 'transaction_type', 'amount', 'succeeded']
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Account, AccountAdmin)
+admin.site.register(Transaction, TransactionAdmin)
