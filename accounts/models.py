@@ -19,7 +19,7 @@ def get_default_amount():
 
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
-    username = models.CharField(max_length=16, validators=[validate_username], unique=True)
+    username = models.CharField(max_length=16, validators=[validate_username], unique=True, verbose_name='Minecraft Username')
     minecraft_uuid = models.CharField(max_length=36, default='not set')
 
     USERNAME_FIELD = 'email'
