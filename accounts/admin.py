@@ -21,7 +21,7 @@ class AccountAdmin(admin.ModelAdmin):
 
 class TransactionAdmin(admin.ModelAdmin):
     model = Transaction
-    list_display = ['sender', 'recipient', 'transaction_type', 'amount', 'succeeded']
+    list_display = ['date', 'sender', 'recipient', 'transaction_type', 'amount', 'succeeded']
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Account, AccountAdmin)

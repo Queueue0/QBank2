@@ -62,6 +62,7 @@ class Transaction(models.Model):
         (REFUND, 'Refund'),
     ]
 
+    date = models.DateTimeField(auto_now_add=True)
     sender = models.ForeignKey(CustomUser, related_name='sender', on_delete=models.SET_NULL, blank=True, null=True)
     recipient = models.ForeignKey(CustomUser, related_name='recipient', on_delete=models.SET_NULL, blank=True, null=True)
     transaction_type = models.CharField(
@@ -96,6 +97,9 @@ def on_visit(instance, **kwargs):
 @receiver(post_save, sender=Transaction)
 def process_transaction(instance, created, **kwargs):
     if created:
+        instance.amount = hf.reduce(instance.amount)
+        instance.save()
+        
         if instance.transaction_type == 'D':
             account = Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
             balance = account.balance
