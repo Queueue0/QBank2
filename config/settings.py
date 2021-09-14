@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -85,22 +86,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-DATABASES = {}
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DATABASE_URL'),
-            'PORT': os.getenv('DB_PORT'),
-        }
+
+DATABASES = {
+    'default': dj_database_url.parse(os.getenv('DATABASE_URL'), con_max_age=600)
     }
-else:
-    DATABASES = {
-        "default": os.getenv('DATABASE_URL')
-    }
+
 
 
 # Password validation
