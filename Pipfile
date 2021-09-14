@@ -9,6 +9,8 @@ django-crispy-forms = "==1.9.2"
 mcuuid = "*"
 django-user-visit = "*"
 python-dotenv = "*"
+whitenoise = "==5.1.0"
+gunicorn = "==19.9.0"
 
 [dev-packages]
 
