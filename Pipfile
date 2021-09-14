@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 django = "~=3.1.0"
 django-crispy-forms = "==1.9.2"
+mcuuid = "*"
+django-user-visit = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
