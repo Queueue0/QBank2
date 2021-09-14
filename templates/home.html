@@ -5,10 +5,9 @@
 {% block content %}
 {% if user.is_authenticated %}
     Welcome, {{ user.username }}!
-    <p><a href="{% url 'logout' %}">Log Out</a></p>
+    <p>Note that the site is still under construction and you may need to make a new account once the service officially launches</p>
 {% else %}
-    <p>You are not logged in</p>
-    <a href="{% url 'login' %}">Log In</a> |
-    <a href="{% url 'signup' %}">Sign Up</a>
+    <p>The site is currently under construction, but feel free to make an account.</p>
+    <p>Note that if you make an account you may have to make a new one once the service officially launches.</p>
 {% endif %}
 {% endblock content %}
