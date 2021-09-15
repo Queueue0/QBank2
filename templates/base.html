@@ -32,8 +32,11 @@
                             aria-labelledby="navbarDropdown">
                                 {% if user.is_staff %}
                                     <a class="dropdown-item" href="{% url 'admin:index' %}">Admin Page</a>
-                                    <div class="dropdown-divider"></div>
+                                    <!--<div class="dropdown-divider"></div>-->
                                 {% endif %}
+                                <a class="dropdown-item"
+                                href="{% url 'profile' user.pk %}">Account Page</a>
+                                <!--<div class="dropdown-divider"></div>-->
                                 <a class="dropdown-item"
                                 href="{% url 'password_change' %}">Change Password</a>
                                 <div class="dropdown-divider"></div>

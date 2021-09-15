@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>{{ object.username }}</h2>
+
+    {% for account in object.account_set.all %}
+       <!--- <p>{{ account.account_name }}</p>-->
+       <div class="card">
+           <div class="card-header">
+               <span class="font-weight-bold">{{ account.account_name }}</span>
+               {% if account.primary %}
+                    <span class="text-muted">Primary</span>
+               {% endif %}
+           </div>
+           <div class="card-body">
+               <table class="table">
+                   <thread>
+                       <tr>
+                           <th scope="col">Netherite Blocks</th>
+                           <th scope="col">Netherite Ingots</th>
+                           <th scope="col">Netherite Scrap</th>
+                           <th scope="col">Diamond Blocks</th>
+                           <th scope="col">Diamonds</th>
+                       </tr>
+                   </thread>
+                   <tbody>
+                       <tr>
+                           <td>{{ account.balance.0 }}</td>
+                           <td>{{ account.balance.1 }}</td>
+                           <td>{{ account.balance.2 }}</td>
+                           <td>{{ account.balance.3 }}</td>
+                           <td>{{ account.balance.4 }}</td>
+                       </tr>
+                   </tbody>
+               </table>
+           </div>
+       </div>
+       <br />
+    {% endfor %}
+{% endblock content %}
