@@ -7,7 +7,7 @@
        <!--- <p>{{ account.account_name }}</p>-->
        <div class="card">
            <div class="card-header">
-               <span class="font-weight-bold">{{ account.account_name }}</span>
+               <span class="font-weight-bold"><a href="{% url 'account' account.pk %}">{{ account.account_name }}</a></span>
                {% if account.primary %}
                     <span class="text-muted">Primary</span>
                {% endif %}

@@ -6,6 +6,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 from user_visit.models import UserVisit
+from itertools import chain
 from mcuuid import MCUUID
 from mcuuid.tools import is_valid_minecraft_username
 from mccurrencyhelper import helperfunctions as hf
@@ -50,6 +51,12 @@ class Account(models.Model):
     
     balance = ArrayField(models.PositiveIntegerField(), size=5, default=get_default_amount)
 
+    @property
+    def transaction_set(self):
+        result = sorted(chain(self.sender_account.all(), self.recipient_account.all()), 
+        key=lambda instance: instance.date)
+        return result
+
     def __str__(self):
         return self.owner.username + "'s " + self.account_name
 
@@ -66,8 +73,8 @@ class Transaction(models.Model):
     ]
 
     date = models.DateTimeField(auto_now_add=True)
-    sender = models.ForeignKey(CustomUser, related_name='sender', on_delete=models.SET_NULL, blank=True, null=True)
-    recipient = models.ForeignKey(CustomUser, related_name='recipient', on_delete=models.SET_NULL, blank=True, null=True)
+    sender_account = models.ForeignKey(Account, related_name='sender_account', on_delete=models.SET_NULL, blank=True, null=True)
+    recipient_account = models.ForeignKey(Account, related_name='recipient_account', on_delete=models.SET_NULL, blank=True, null=True)
     transaction_type = models.CharField(
         max_length=1,
         choices=TRANSACTION_TYPE_CHOICES,
@@ -77,6 +84,18 @@ class Transaction(models.Model):
     amount = ArrayField(models.PositiveIntegerField(), size=5, default=get_default_amount)
 
     succeeded = models.BooleanField(default=True)
+    
+    @property
+    def sender(self):
+        if self.sender_account:
+            return self.sender_account.owner
+        return None
+    
+    @property
+    def recipient(self):
+        if self.recipient_account:
+            return self.recipient_account.owner
+        return None
 
 @receiver(post_save, sender=CustomUser)
 def add_uuid(instance, **kwargs):
@@ -104,7 +123,7 @@ def process_transaction(instance, created, **kwargs):
         instance.save()
         
         if instance.transaction_type == 'D':
-            account = Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
+            account = instance.recipient_account #Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
             balance = account.balance
             amount = instance.amount
             balance = hf.add(balance, amount)
@@ -112,12 +131,12 @@ def process_transaction(instance, created, **kwargs):
             account.save()
         
         if instance.transaction_type == 'T' or instance.transaction_type == 'R':
-            if instance.sender == instance.recipient:
+            if instance.sender_account == instance.recipient_account:
                 instance.succeeded = False
                 instance.save()
             else:
-                sender_account = Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
-                recip_account = Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
+                sender_account = instance.sender_account #Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
+                recip_account = instance.recipient_account #Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
                 sender_bal = sender_account.balance
                 recip_bal = recip_account.balance
                 amount = instance.amount
@@ -134,7 +153,7 @@ def process_transaction(instance, created, **kwargs):
                     recip_account.save()
         
         if instance.transaction_type == 'W':
-            account = Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
+            account = instance.sender_account #Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
             balance = account.balance
             amount = instance.amount
             

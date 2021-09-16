@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object.account_name }}{% endblock title %}
+
+{% block content %}
+<br/>
+<div class="row">
+    <div class="mr-auto col-auto">
+        <h1>{{ object.account_name }}</h1>
+    </div>
+    <div class="ml-auto col-auto">
+        <a href="{% url 'profile' user.pk %}" class="btn btn-secondary">Back to Profile</a>
+    </div>
+</div>
+<h2>Balance</h2>
+<table class="table">
+    <thread>
+        <tr>
+            <th scope="col">Netherite Blocks</th>
+            <th scope="col">Netherite Ingots</th>
+            <th scope="col">Netherite Scrap</th>
+            <th scope="col">Diamond Blocks</th>
+            <th scope="col">Diamonds</th>
+        </tr>
+    </thread>
+    <tbody>
+        <tr>
+            <td>{{ object.balance.0 }}</td>
+            <td>{{ object.balance.1 }}</td>
+            <td>{{ object.balance.2 }}</td>
+            <td>{{ object.balance.3 }}</td>
+            <td>{{ object.balance.4 }}</td>
+        </tr>
+    </tbody>
+</table>
+<br />
+<h2>Transactions</h2>
+<table id="transactionTable" class="table">
+    <thread>
+        <tr>
+            <th scope="col">Timestamp</th>
+            <th scope="col">From</th>
+            <th scope="col">To</th>
+            <th scope="col">Netherite Blocks</th>                <th scope="col">Netherite Ingots</th>
+            <th scope="col">Netherite Scrap</th>
+            <th scope="col">Diamond Blocks</th>
+            <th scope="col">Diamonds</th>
+        </tr>
+    </thread>
+    <tbody>
+        {% for transaction in object.transaction_set %}
+            <tr>
+                <th scope="row">{{ transaction.date }}</th>
+                <td>{{ transaction.sender_account }}</td>
+                <td>{{ transaction.recipient_account }}</td>
+                <td>{{ transaction.amount.0 }}</td>
+                <td>{{ transaction.amount.1 }}</td>
+                <td>{{ transaction.amount.2 }}</td>
+                <td>{{ transaction.amount.3 }}</td>
+                <td>{{ transaction.amount.4 }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}

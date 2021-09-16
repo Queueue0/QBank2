@@ -4,7 +4,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
 from .forms import CustomUserCreationForm
-from .models import CustomUser
+from .models import CustomUser, Account
 
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -19,3 +19,12 @@ class ProfileView(LoginRequiredMixin, DetailView):
         if self.get_object() != self.request.user:
             return redirect('profile', pk=self.request.user.pk, permanent=True)
         return super(ProfileView, self).get(request, *args, **kwargs)
+
+class AccountDetailView(LoginRequiredMixin, DetailView):
+    model = Account
+    template_name = 'account_view.html'
+
+    def get(self, request, *args, **kwargs):
+        if self.get_object().owner != self.request.user:
+            return redirect('profile', pk=self.request.user.pk, permanent=True)
+        return super(AccountDetailView, self).get(request, *args, **kwargs)
