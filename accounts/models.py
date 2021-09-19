@@ -54,7 +54,7 @@ class Account(models.Model):
     @property
     def transaction_set(self):
         result = sorted(chain(self.sender_account.all(), self.recipient_account.all()), 
-        key=lambda instance: instance.date)
+        key=lambda instance: instance.date, reverse=True)
         return result
 
     def __str__(self):
@@ -81,7 +81,11 @@ class Transaction(models.Model):
         default=TRANSFER,
     )
 
-    amount = ArrayField(models.PositiveIntegerField(), size=5, default=get_default_amount)
+    netherite_blocks = models.PositiveIntegerField(default=0)
+    netherite_ingots = models.PositiveIntegerField(default=0)
+    netherite_scrap = models.PositiveIntegerField(default=0)
+    diamond_blocks = models.PositiveIntegerField(default=0)
+    diamonds = models.PositiveIntegerField(default=0)
 
     succeeded = models.BooleanField(default=True)
     
@@ -96,6 +100,21 @@ class Transaction(models.Model):
         if self.recipient_account:
             return self.recipient_account.owner
         return None
+
+    @property
+    def amount(self):
+        return [self.netherite_blocks, 
+                self.netherite_ingots,
+                self.netherite_scrap,
+                self.diamond_blocks,
+                self.diamonds]
+    
+    def set_amount(self, amount):
+        self.netherite_blocks = amount[0]
+        self.netherite_ingots = amount[1]
+        self.netherite_scrap = amount[2]
+        self.diamond_blocks = amount[3]
+        self.diamonds = amount[4]
 
 @receiver(post_save, sender=CustomUser)
 def add_uuid(instance, **kwargs):
@@ -119,7 +138,7 @@ def on_visit(instance, **kwargs):
 @receiver(post_save, sender=Transaction)
 def process_transaction(instance, created, **kwargs):
     if created:
-        instance.amount = hf.reduce(instance.amount)
+        instance.set_amount(hf.reduce(instance.amount))
         instance.save()
         
         if instance.transaction_type == 'D':

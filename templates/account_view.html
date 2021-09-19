@@ -39,6 +39,7 @@
     <thread>
         <tr>
             <th scope="col">Timestamp</th>
+            <th scope="col">Type</th>
             <th scope="col">From</th>
             <th scope="col">To</th>
             <th scope="col">Netherite Blocks</th>                <th scope="col">Netherite Ingots</th>
@@ -51,6 +52,7 @@
         {% for transaction in object.transaction_set %}
             <tr>
                 <th scope="row">{{ transaction.date }}</th>
+                <td>{{ transaction.get_transaction_type_display }}</td>
                 <td>{{ transaction.sender_account }}</td>
                 <td>{{ transaction.recipient_account }}</td>
                 <td>{{ transaction.amount.0 }}</td>
