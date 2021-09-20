@@ -1,9 +1,10 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, TransferCreationForm
 from .models import CustomUser, Account
 
 class SignUpView(CreateView):
@@ -28,3 +29,19 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         if self.get_object().owner != self.request.user:
             return redirect('profile', pk=self.request.user.pk, permanent=True)
         return super(AccountDetailView, self).get(request, *args, **kwargs)
+
+@login_required
+def transfer_creation_view(request):
+    form = TransferCreationForm(user=request.user)
+    if request.method == 'POST':
+        form = TransferCreationForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('transfer_add')
+    return render(request, 'transfer_add.html', {'form': form})
+
+# AJAX
+def load_accounts(request):
+    owner_id = request.GET.get('owner_id')
+    accounts = Account.objects.filter(owner_id=owner_id).all()
+    return render(request, 'account_dropdown_list_options.html', {'accounts': accounts})

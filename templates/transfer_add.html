@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Transfer Funds{% endblock title %}
+
+{% block content %}
+<h2>Transfer Funds</h2>
+
+<form method="post" id="transferForm" data-accounts-url="{% url 'ajax_load_accounts' %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <input type="submit" value="Submit">
+</form>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+    $("#id_recipient").change(function () {
+        const url = $("#transferForm").attr("data-accounts-url");  // get the url of the `load_accounts` view
+        const ownerId = $(this).val();  // get the selected owner ID from the HTML input
+        
+        $.ajax({                       // initialize an AJAX request
+            url: url,                    // set the url of the request (= /persons/ajax/load-cities/ )
+            data: {
+                'owner_id': ownerId       // add the owner id to the GET parameters
+            },
+            success: function (data) {   // `data` is the return of the `load_cities` view function
+                $("#id_recipient_account").html(data);  // replace the contents of the account input with the data that came from the server
+            }
+        });
+
+    });
+</script>
+{% endblock content %}
