@@ -1,7 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>{{ object.username }}</h2>
+    <br/>
+    <div class="row">
+        <div class="mr-auto col-auto">
+            <h2>{{ object.username }}</h2>
+        </div>
+        <div class="ml-auto col-auto">
+            <a class="btn btn-primary" href="{% url 'transfer_add' %}">Transfer Funds/Pay Someone</a>
+        </div>
+    </div>
 
     {% for account in object.account_set.all %}
        <!--- <p>{{ account.account_name }}</p>-->

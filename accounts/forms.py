@@ -1,5 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
+
+from crispy_forms.helper import FormHelper
+#from crispy_forms import layout, bootstrap
+from crispy_forms.bootstrap import Div
+from crispy_forms.layout import Layout
+
 from .models import Account, CustomUser, Transaction
 
 class CustomUserCreationForm(UserCreationForm):
@@ -25,12 +31,37 @@ class TransferCreationForm(forms.ModelForm):
                   'netherite_blocks', 'netherite_ingots',
                   'netherite_scrap', 'diamond_blocks',
                   'diamonds')
+        labels = {
+            'sender_account': 'From account',
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
         self.fields['recipient_account'].queryset = Account.objects.none()
+        self.fields['recipient_account'].required = True
         self.fields['sender_account'].queryset = self.user.account_set
+        self.fields['sender_account'].required = True
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.method = "POST"
+        
+        self.helper.layout = Layout(
+            Div(
+                Div('sender_account'),
+                Div('recipient'),
+                Div('recipient_account'),
+                Div(
+                    Div('netherite_blocks'),
+                    Div('netherite_ingots'),
+                    Div('netherite_scrap'),
+                    Div('diamond_blocks'),
+                    Div('diamonds'),
+                    css_class='row mx-auto',
+                )
+            )
+        )
 
         if 'recipient' in self.data:
             try:

@@ -56,6 +56,9 @@ class Account(models.Model):
 
     def __str__(self):
         return self.owner.username + "'s " + self.account_name
+    
+    class Meta:
+        ordering = ('owner', '-primary',)
 
 class Transaction(models.Model):
     DEPOSIT = 'D'
@@ -156,6 +159,8 @@ def process_transaction(instance, created, **kwargs):
                 sender_bal = sender_account.balance
                 recip_bal = recip_account.balance
                 amount = instance.amount
+
+                print(hf.lessthan(sender_bal, amount))
 
                 if hf.lessthan(sender_bal, amount):
                     instance.succeeded = False

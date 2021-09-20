@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import views as auth_views
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, TemplateView
 from .forms import CustomUserCreationForm, TransferCreationForm, LoginForm
 from .models import CustomUser, Account
 
@@ -34,6 +34,9 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             return redirect('profile', pk=self.request.user.pk, permanent=True)
         return super(AccountDetailView, self).get(request, *args, **kwargs)
 
+class TransactionCancelledView(LoginRequiredMixin, TemplateView):
+    template_name = 'transaction_cancelled.html'
+
 @login_required
 def transfer_creation_view(request):
     form = TransferCreationForm(user=request.user)
@@ -41,7 +44,7 @@ def transfer_creation_view(request):
         form = TransferCreationForm(request.POST, user=request.user)
         if form.is_valid():
             form.save()
-            return redirect('transfer_add')
+            return redirect('account', pk=form.instance.sender_account.pk)
     return render(request, 'transfer_add.html', {'form': form})
 
 # AJAX

@@ -17,7 +17,7 @@ class CustomUserAdmin(UserAdmin):
 
 class AccountAdmin(admin.ModelAdmin):
     model = Account
-    list_display = ['owner', 'account_name', 'account_type', 'primary', 'balance']
+    list_display = ['__str__', 'account_type', 'primary', 'balance']
 
 class TransactionAdmin(admin.ModelAdmin):
     model = Transaction

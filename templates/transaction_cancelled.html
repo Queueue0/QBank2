@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction Cancelled{% endblock title %}
+
+{% block content %}
+    <h2>Transaction cancelled</h2>
+    <p>Your transaction has been successfully canceled</p>
+    <a class="btn btn-primary" href="{% url 'profile' pk=user.pk %}">Back to Profile</a>
+{% endblock content %}

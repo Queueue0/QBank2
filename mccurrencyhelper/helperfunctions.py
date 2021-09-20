@@ -45,7 +45,7 @@ def subtract(amount1=[0,0,0,0,0], amount2=[0,0,0,0,0]):
 
 def lessthan(amount1=[0,0,0,0,0], amount2=[0,0,0,0,0]):
     testlist = subtract(amount1, amount2)
-    result = all(i <= 0 for i in testlist)
+    result = any(i < 0 for i in testlist)
     return result
 
 def greaterthan(amount1=[0,0,0,0,0], amount2=[0,0,0,0,0]):

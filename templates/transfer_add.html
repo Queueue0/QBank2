@@ -7,9 +7,15 @@
 <h2>Transfer Funds</h2>
 
 <form method="post" id="transferForm" data-accounts-url="{% url 'ajax_load_accounts' %}">
+    <style>
+        .asteriskField {
+            display: none;
+        }
+    </style>
     {% csrf_token %}
-    {{ form|crispy }}
-    <input type="submit" value="Submit">
+    {% crispy form form.helper %}
+    <button class="btn btn-success" type="submit">Transfer Funds</button>
+    <a class="btn btn-danger" href="{% url 'transaction_cancel' %}">Cancel</a>
 </form>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
@@ -19,11 +25,11 @@
         const ownerId = $(this).val();  // get the selected owner ID from the HTML input
         
         $.ajax({                       // initialize an AJAX request
-            url: url,                    // set the url of the request (= /persons/ajax/load-cities/ )
+            url: url,                    // set the url of the request
             data: {
                 'owner_id': ownerId       // add the owner id to the GET parameters
             },
-            success: function (data) {   // `data` is the return of the `load_cities` view function
+            success: function (data) {   // `data` is the return of the view function
                 $("#id_recipient_account").html(data);  // replace the contents of the account input with the data that came from the server
             }
         });
