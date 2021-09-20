@@ -23,9 +23,6 @@ class CustomUser(AbstractUser):
     username = models.CharField(max_length=16, validators=[validate_username], unique=True, verbose_name='Minecraft Username')
     minecraft_uuid = models.CharField(max_length=36, default='not set')
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
-
     def get_username(self):
         return self.username
         

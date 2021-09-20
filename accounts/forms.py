@@ -1,12 +1,15 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
 from .models import Account, CustomUser, Transaction
 
 class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm):
         model = CustomUser
-        fields = ('username', 'email',)
+        fields = ('username', 'email')
+
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(label='Email or Minecraft Username')
     
 class CustomUserChangeForm(UserChangeForm):
         
@@ -34,7 +37,7 @@ class TransferCreationForm(forms.ModelForm):
                 owner_id = int(self.data.get('recipient'))
                 self.fields['recipient_account'].queryset = Account.objects.filter(owner_id=owner_id).order_by('account_name')
             except (ValueError, TypeError):
-                pass  # invalid input from the client; ignore and fallback to empty City queryset
+                pass  # invalid input from the client; ignore and fallback to empty queryset
         elif self.instance.pk:
             self.fields['recipient_account'].queryset = self.instance.recipient.account_set.order_by('account_name')
     
