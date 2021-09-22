@@ -116,6 +116,61 @@ class Transaction(models.Model):
         self.diamond_blocks = amount[3]
         self.diamonds = amount[4]
 
+class DepositWithdrawalRequest(models.Model):
+    DEPOSIT = 'D'
+    WITHDRAWAL = 'W'
+    TYPE_CHOICES = [
+        (DEPOSIT, 'Deposit'),
+        (WITHDRAWAL, 'Withdrawal')
+    ]
+
+    PENDING = 'P'
+    COMPLETED = 'C'
+    REJECTED = 'R'
+    STATUS_CHOICES = [
+        (PENDING, 'Pending'),
+        (COMPLETED, 'Completed'),
+        (REJECTED, 'Rejected')
+    ]
+
+    date_created = models.DateTimeField(auto_now_add=True)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    request_type = models.CharField(
+        max_length=1,
+        choices=TYPE_CHOICES,
+        default=DEPOSIT,
+    )
+
+    netherite_blocks = models.PositiveIntegerField(default=0)
+    netherite_ingots = models.PositiveIntegerField(default=0)
+    netherite_scrap = models.PositiveIntegerField(default=0)
+    diamond_blocks = models.PositiveIntegerField(default=0)
+    diamonds = models.PositiveIntegerField(default=0)
+
+    status = models.CharField(
+        max_length=1,
+        choices=STATUS_CHOICES,
+        default=PENDING,
+    )
+
+    @property
+    def amount(self):
+        return [self.netherite_blocks, 
+                self.netherite_ingots,
+                self.netherite_scrap,
+                self.diamond_blocks,
+                self.diamonds]
+                
+    def set_amount(self, amount):
+        self.netherite_blocks = amount[0]
+        self.netherite_ingots = amount[1]
+        self.netherite_scrap = amount[2]
+        self.diamond_blocks = amount[3]
+        self.diamonds = amount[4]
+
+    class Meta:
+        ordering = ('date_created', 'status',)
+
 @receiver(post_save, sender=CustomUser)
 def add_uuid(instance, **kwargs):
     if instance.minecraft_uuid == 'not set':
