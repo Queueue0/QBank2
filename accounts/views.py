@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import views as auth_views
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, TemplateView
-from .forms import CustomUserCreationForm, TransferCreationForm, LoginForm
+from .forms import CustomUserCreationForm, TransferCreationForm, DepositWithdrawalRequestForm, LoginForm
 from .models import CustomUser, Account
 
 class SignUpView(CreateView):
@@ -52,3 +52,16 @@ def load_accounts(request):
     owner_id = request.GET.get('owner_id')
     accounts = Account.objects.filter(owner_id=owner_id).all()
     return render(request, 'account_dropdown_list_options.html', {'accounts': accounts})
+
+@login_required
+def depositwithdrawalrequest_view(request):
+    form = DepositWithdrawalRequestForm(user=request.user)
+    if request.method == 'POST':
+        form = DepositWithdrawalRequestForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('account', pk=form.instance.account.pk)
+    return render(request, 'dwrequest.html', {'form': form})
+
+def is_staff(user):
+    return user.is_staff

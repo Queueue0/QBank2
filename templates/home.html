@@ -3,12 +3,33 @@
 {% block title %}Home{% endblock title %}
 
 {% block content %}
-{% if user.is_authenticated %}
-    Welcome, {{ user.username }}!
-    <p>Note that the site is still under construction and you may need to make a new account once the service officially launches</p>
-{% else %}
-    <p>The site is currently under construction, but feel free to make an account.</p>
-    <p>Note that if you make an account you may have to make a new one once the service officially launches.</p>
-{% endif %}
     <br />
+    <div class="jumbotron">
+        <h1 class="display-4">QBank 2.0</h1>
+        {% if user.is_authenticated %}
+            <p class="lead">Welcome {{ user.username }}!</p>
+            <hr class="my-4"/>
+            <p>Note that the site is still under construction and you may need to make a new account when the service launches.</p>
+            <p class="lead">
+                <a class="btn btn-primary btn-lg" href="{% url 'profile' user.pk %}" role="button">Profile</a>
+            </p>
+        {% else %}
+            <p class="lead">Welcome!</p>
+            <hr class="my-4"/>
+            <p>This site is still under construction.</p>
+            <p>If you choose to make an account to look around note that you may need to create a new account once the service launches.</p>
+            <div class="row">
+                <div class="col-auto">
+                    <p class="lead">
+                        <a class="btn btn-secondary btn-lg" href="{% url 'login' %}" role="button">Log In</a>
+                    </p>
+                </div>
+                <div class="col-auto">
+                    <p class="lead">
+                        <a class="btn btn-primary btn-lg" href="{% url 'signup' %}" role="button">Sign Up</a>
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
 {% endblock content %}

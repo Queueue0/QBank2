@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 from user_visit.models import UserVisit
@@ -53,6 +53,10 @@ class Account(models.Model):
         result = sorted(chain(self.sender_account.all(), self.recipient_account.all()), 
         key=lambda instance: instance.date, reverse=True)
         return result
+ 
+    @property
+    def pending_requests(self):
+        return self.request.filter(status='P')
 
     def __str__(self):
         return self.owner.username + "'s " + self.account_name
@@ -134,7 +138,7 @@ class DepositWithdrawalRequest(models.Model):
     ]
 
     date_created = models.DateTimeField(auto_now_add=True)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, related_name='request', on_delete=models.CASCADE)
     request_type = models.CharField(
         max_length=1,
         choices=TYPE_CHOICES,
@@ -154,6 +158,10 @@ class DepositWithdrawalRequest(models.Model):
     )
 
     @property
+    def user(self):
+        return self.account.owner
+
+    @property
     def amount(self):
         return [self.netherite_blocks, 
                 self.netherite_ingots,
@@ -169,7 +177,7 @@ class DepositWithdrawalRequest(models.Model):
         self.diamonds = amount[4]
 
     class Meta:
-        ordering = ('date_created', 'status',)
+        ordering = ('-date_created',)
 
 @receiver(post_save, sender=CustomUser)
 def add_uuid(instance, **kwargs):
@@ -196,50 +204,87 @@ def process_transaction(instance, created, **kwargs):
         instance.set_amount(hf.reduce(instance.amount))
         instance.save()
         
-        if instance.transaction_type == 'D':
-            account = instance.recipient_account #Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
-            balance = account.balance
-            amount = instance.amount
-            balance = hf.add(balance, amount)
-            account.balance = balance
-            account.save()
-        
-        if instance.transaction_type == 'T' or instance.transaction_type == 'R':
-            if instance.sender_account == instance.recipient_account:
-                instance.succeeded = False
-                instance.save()
-            else:
-                sender_account = instance.sender_account #Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
-                recip_account = instance.recipient_account #Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
-                sender_bal = sender_account.balance
-                recip_bal = recip_account.balance
+        if instance.succeeded:
+            if instance.transaction_type == 'D':
+                account = instance.recipient_account #Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
+                balance = account.balance
                 amount = instance.amount
-
-                print(hf.lessthan(sender_bal, amount))
-
-                if hf.lessthan(sender_bal, amount):
+                balance = hf.add(balance, amount)
+                account.balance = balance
+                account.save()
+            
+            if instance.transaction_type == 'T' or instance.transaction_type == 'R':
+                if instance.sender_account == instance.recipient_account:
                     instance.succeeded = False
                     instance.save()
                 else:
-                    sender_bal = hf.subtract(sender_bal, amount)
-                    recip_bal = hf.add(recip_bal, amount)
-                    sender_account.balance = sender_bal
-                    recip_account.balance = recip_bal
-                    sender_account.save()
-                    recip_account.save()
-        
-        if instance.transaction_type == 'W':
-            account = instance.sender_account #Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
-            balance = account.balance
-            amount = instance.amount
+                    sender_account = instance.sender_account #Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
+                    recip_account = instance.recipient_account #Account.objects.filter(owner=instance.recipient).filter(primary=True).filter(account_type='C').first()
+                    sender_bal = sender_account.balance
+                    recip_bal = recip_account.balance
+                    amount = instance.amount
+
+                    print(hf.lessthan(sender_bal, amount))
+
+                    if hf.lessthan(sender_bal, amount):
+                        instance.succeeded = False
+                        instance.save()
+                    else:
+                        sender_bal = hf.subtract(sender_bal, amount)
+                        recip_bal = hf.add(recip_bal, amount)
+                        sender_account.balance = sender_bal
+                        recip_account.balance = recip_bal
+                        sender_account.save()
+                        recip_account.save()
             
-            if hf.lessthan(balance, amount):
-                instance.succeeded = False
-                instance.save()
+            if instance.transaction_type == 'W':
+                account = instance.sender_account #Account.objects.filter(owner=instance.sender).filter(primary=True).filter(account_type='C').first()
+                balance = account.balance
+                amount = instance.amount
+                
+                if hf.lessthan(balance, amount):
+                    instance.succeeded = False
+                    instance.save()
+                else:
+                    balance = hf.subtract(balance, amount)
+                    account.balance = balance
+                    account.save()
+
+@receiver(pre_save, sender=DepositWithdrawalRequest)
+def process_request(instance, **kwargs):
+    if instance.id is None:
+        pass
+    else:
+        previous = DepositWithdrawalRequest.objects.get(id=instance.id)
+        if previous.status != 'P':
+            instance.status = previous.status
+        elif previous.status == 'P' and instance.status == 'C':
+            if instance.request_type == 'D':
+                new_transaction = Transaction(recipient_account = instance.account, transaction_type = instance.request_type)
+                new_transaction.set_amount(instance.amount)
+                new_transaction.save()
             else:
-                balance = hf.subtract(balance, amount)
-                account.balance = balance
-                account.save()
+                new_transaction = Transaction(sender_account = instance.account, transaction_type = instance.request_type)
+                new_transaction.set_amount(instance.amount)
+                new_transaction.save()
+        elif previous.status == 'P' and instance.status == 'R':
+            if instance.request_type == 'D':
+                new_transaction = Transaction(recipient_account = instance.account, transaction_type = instance.request_type, succeeded = False)
+                new_transaction.set_amount(instance.amount)
+                new_transaction.save()
+            else:
+                new_transaction = Transaction(sender_account = instance.account, transaction_type = instance.request_type, succeeded = False)
+                new_transaction.set_amount(instance.amount)
+                new_transaction.save()
+
+@receiver(post_save, sender=DepositWithdrawalRequest)
+def dwrequest_created(instance, created, **kwargs):
+    if created:
+        instance.set_amount(hf.reduce(instance.amount))
+
+        if (instance.request_type == 'W' and hf.lessthan(instance.account.balance, instance.amount)):
+            instance.status = 'R'
+        instance.save()
 
 def update_username(instance):
     player = MCUUID(uuid=instance.minecraft_uuid)

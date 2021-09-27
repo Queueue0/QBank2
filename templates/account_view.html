@@ -35,7 +35,42 @@
     </tbody>
 </table>
 <br />
-<h2>Transactions</h2>
+{% if object.pending_requests %}
+    <h2>Pending Transactions</h2>
+    <table id="pendingtransactiontable" class="table">
+        <thread>
+            <tr>
+                <th scope="col">Timestamp</th>
+                <th scope="col">Type</th>
+                <th scope="col">Account</th>
+                <th scope="col">Netherite Blocks</th>                <th scope="col">Netherite Ingots</th>
+                <th scope="col">Netherite Scrap</th>
+                <th scope="col">Diamond Blocks</th>
+                <th scope="col">Diamonds</th>
+                <th scope="col">Status</th>
+            </tr>
+        </thread>
+        <tbody>
+            {% for request in object.pending_requests %}
+                {% if request.status == 'P' %}
+                <tr>
+                    <th scope="row">{{ request.date_created }}</th>
+                    <td>{{ request.get_request_type_display }}</td>
+                    <td>{{ request.account }}</td>
+                    <td>{{ request.amount.0 }}</td>
+                    <td>{{ request.amount.1 }}</td>
+                    <td>{{ request.amount.2 }}</td>
+                    <td>{{ request.amount.3 }}</td>
+                    <td>{{ request.amount.4 }}</td>
+                    <td>{{ request.get_status_display }}</td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <br />
+{% endif %}
+<h2>Completed Transactions</h2>
 <table id="transactionTable" class="table">
     <thread>
         <tr>

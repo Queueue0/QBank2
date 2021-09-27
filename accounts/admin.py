@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser, Account, Transaction
+from .models import CustomUser, Account, Transaction, DepositWithdrawalRequest
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
@@ -23,6 +23,11 @@ class TransactionAdmin(admin.ModelAdmin):
     model = Transaction
     list_display = ['date', 'sender', 'recipient', 'transaction_type', 'amount', 'succeeded']
 
+class DWRequestAdmin(admin.ModelAdmin):
+    model = DepositWithdrawalRequest
+    list_display = ['date_created', 'user', 'account', 'request_type', 'amount', 'status']
+
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Transaction, TransactionAdmin)
+admin.site.register(DepositWithdrawalRequest, DWRequestAdmin)
