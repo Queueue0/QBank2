@@ -6,3 +6,6 @@ class Change(models.Model):
 
     def __str__(self):
         return self.date.strftime('%d %B, %Y')
+    
+    class Meta:
+        ordering = ('-date',)
