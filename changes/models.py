@@ -8,4 +8,4 @@ class Change(models.Model):
         return self.date.strftime('%d %B, %Y')
     
     class Meta:
-        ordering = ('-date',)
+        ordering = ('date',)
